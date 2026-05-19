@@ -30,12 +30,16 @@ export default function MovieRow({ title, movies, href }: MovieRowProps) {
     if (!el) return;
     setCanLeft(el.scrollLeft > 10);
     setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 10);
+    // Notify all MovieCards that a horizontal row scroll occurred so they
+    // can close their hover popup (scroll events don't bubble, so we use
+    // a custom event on window instead).
+    window.dispatchEvent(new Event('rowscroll'));
   };
 
   if (!movies.length) return null;
 
   return (
-    <div className="mb-8 group/row">
+    <div className="group/row" style={{ marginBottom: '48px' }}>
       <SectionHeader title={title} href={href} />
 
       <div className="relative">
@@ -58,8 +62,8 @@ export default function MovieRow({ title, movies, href }: MovieRowProps) {
         <div
           ref={scrollRef}
           onScroll={onScroll}
-          className="flex gap-3 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-6"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="flex overflow-x-auto scrollbar-hide"
+          style={{ gap: '10px', paddingLeft: '60px', paddingRight: '60px', paddingBottom: '24px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {movies.map((movie, i) => (
             <motion.div

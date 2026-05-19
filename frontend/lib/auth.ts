@@ -7,7 +7,7 @@ import { LoginCredentials, SignupCredentials, User } from '@/types/auth';
 // Mock user for demo purposes
 export const MOCK_USER: User = {
   id: 'user-1',
-  email: 'aryan@cineai.com',
+  email: 'aryan@nflix.com',
   name: 'Aryan',
   profiles: [
     { id: 'p1', name: 'Aryan',  avatar: '/images/profiles/avatar1.png' },

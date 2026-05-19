@@ -20,6 +20,10 @@ interface AuthContextValue extends AuthState {
   likedMovies:        number[];
   toggleLike:         (movieId: number) => void;
   isLiked:            (movieId: number) => boolean;
+  // Dislikes
+  dislikedMovies:     number[];
+  toggleDislike:      (movieId: number) => void;
+  isDisliked:         (movieId: number) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -28,7 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser]           = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [myList, setMyList]       = useState<Movie[]>([]);
-  const [likedMovies, setLiked]   = useState<number[]>([]);
+  const [likedMovies, setLiked]       = useState<number[]>([]);
+  const [dislikedMovies, setDisliked] = useState<number[]>([]);
 
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
@@ -53,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setMyList([]);
       setLiked([]);
+      setDisliked([]);
     } finally { setIsLoading(false); }
   }, []);
 
@@ -71,10 +77,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isInMyList     = useCallback((movieId: number) =>
     myList.some(m => m.id === movieId), [myList]);
 
-  const toggleLike = useCallback((movieId: number) =>
-    setLiked(l => l.includes(movieId) ? l.filter(x => x !== movieId) : [...l, movieId]), []);
+  const toggleLike = useCallback((movieId: number) => {
+    setLiked(l => l.includes(movieId) ? l.filter(x => x !== movieId) : [...l, movieId]);
+    // Remove dislike if present (mutually exclusive)
+    setDisliked(d => d.filter(x => x !== movieId));
+  }, []);
   const isLiked = useCallback((movieId: number) =>
     likedMovies.includes(movieId), [likedMovies]);
+
+  const toggleDislike = useCallback((movieId: number) => {
+    setDisliked(d => d.includes(movieId) ? d.filter(x => x !== movieId) : [...d, movieId]);
+    // Remove like if present (mutually exclusive)
+    setLiked(l => l.filter(x => x !== movieId));
+  }, []);
+  const isDisliked = useCallback((movieId: number) =>
+    dislikedMovies.includes(movieId), [dislikedMovies]);
 
   return (
     <AuthContext.Provider value={{
@@ -83,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       myList, myListIds: myList.map(m => m.id),
       addToMyList, removeFromMyList, isInMyList,
       likedMovies, toggleLike, isLiked,
+      dislikedMovies, toggleDislike, isDisliked,
     }}>
       {children}
     </AuthContext.Provider>

@@ -11,7 +11,7 @@ interface SectionHeaderProps {
 
 export default function SectionHeader({ title, href, showArrow = true }: SectionHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-3 px-4 md:px-12">
+    <div className="flex items-center justify-between" style={{ marginBottom: '12px', paddingLeft: '60px', paddingRight: '60px' }}>
       <h2 className="text-white font-bold text-lg md:text-xl tracking-wide">{title}</h2>
       {href && (
         <Link

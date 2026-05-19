@@ -20,9 +20,20 @@ async function tmdbFetch<T>(endpoint: string, params: Record<string, string> = {
   url.searchParams.set('language', 'en-US');
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
 
-  const res = await fetch(url.toString(), { next: { revalidate: 3600 } }); // cache 1 hour
-  if (!res.ok) throw new Error(`TMDB ${res.status}: ${endpoint}`);
-  return res.json() as Promise<T>;
+  // 5-second timeout — never let a slow TMDB response block the page for 30s.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const res = await fetch(url.toString(), {
+      signal: controller.signal,
+      next: { revalidate: 3600 }, // cache 1 hour
+    });
+    if (!res.ok) throw new Error(`TMDB ${res.status}: ${endpoint}`);
+    return res.json() as Promise<T>;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ── TMDB response shapes ──────────────────────────────────────────────────────

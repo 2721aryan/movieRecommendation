@@ -65,26 +65,31 @@ export default function Navbar() {
   };
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        scrolled ? 'bg-black/95 shadow-lg backdrop-blur-md' : 'bg-gradient-to-b from-black/80 to-transparent'
-      }`}
+    <nav
+      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+      style={{
+        background: scrolled
+          ? 'rgba(0, 0, 0, 0.95)'
+          : 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)',
+        backdropFilter: scrolled ? 'blur(12px)' : 'none',
+      }}
     >
-      <div className="flex items-center justify-between px-4 md:px-12 h-16 gap-4">
+      <div
+        className="flex items-center justify-between"
+        style={{ padding: '0 48px', height: '68px', gap: '16px' }}
+      >
 
         {/* Logo — hidden when search is open on mobile */}
         <Link
           href={isAuthenticated ? '/browse' : '/'}
           className={`flex-shrink-0 transition-opacity ${searchOpen ? 'opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto' : 'opacity-100'}`}
         >
-          <span className="text-red-600 font-black text-2xl tracking-tight">{APP_NAME}</span>
+          <span className="text-red-600 font-black tracking-tight" style={{ fontSize: '28px' }}>{APP_NAME}</span>
         </Link>
 
         {/* Desktop nav links */}
         {isAuthenticated && !searchOpen && (
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center" style={{ gap: '28px' }}>
             {navLinks.map(link => (
               <Link
                 key={link.href}
@@ -108,7 +113,8 @@ export default function Navbar() {
               exit={  { opacity: 0, width: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
               onSubmit={handleSearchSubmit}
-              className="flex-1 flex items-center gap-2 bg-gray-900/90 border border-gray-600 focus-within:border-white rounded overflow-hidden px-3 py-1.5"
+              className="flex-1 flex items-center bg-gray-900/90 border border-gray-600 focus-within:border-white overflow-hidden"
+              style={{ gap: '8px', padding: '6px 12px', borderRadius: '4px' }}
             >
               <Search size={16} className="text-gray-400 flex-shrink-0" />
               <input
@@ -132,20 +138,25 @@ export default function Navbar() {
         </AnimatePresence>
 
         {/* Right section */}
-        <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+        <div className="flex items-center flex-shrink-0" style={{ gap: '12px' }}>
           {isAuthenticated ? (
             <>
               {/* Search toggle */}
               {!searchOpen && (
                 <button
                   onClick={() => setSearchOpen(true)}
-                  className="text-gray-300 hover:text-white transition-colors p-1.5"
+                  className="text-gray-300 hover:text-white transition-colors"
+                  style={{ padding: '6px' }}
                   aria-label="Open search"
                 >
                   <Search size={20} />
                 </button>
               )}
-              <button className="text-gray-300 hover:text-white transition-colors p-1.5 hidden md:block" aria-label="Notifications">
+              <button
+                className="text-gray-300 hover:text-white transition-colors hidden md:block"
+                style={{ padding: '6px' }}
+                aria-label="Notifications"
+              >
                 <Bell size={20} />
               </button>
 
@@ -153,9 +164,10 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setDropOpen(v => !v)}
-                  className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                  className="flex items-center hover:opacity-80 transition-opacity"
+                  style={{ gap: '6px' }}
                 >
-                  <div className="w-8 h-8 rounded overflow-hidden bg-gray-700">
+                  <div className="overflow-hidden bg-gray-700" style={{ width: '32px', height: '32px', borderRadius: '4px' }}>
                     <Image
                       src={user?.active_profile?.avatar ?? user?.profiles[0]?.avatar ?? '/images/profiles/avatar1.png'}
                       alt="Profile"
@@ -175,28 +187,32 @@ export default function Navbar() {
                       initial={{ opacity: 0, y: -8, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={  { opacity: 0, y: -8, scale: 0.95 }}
-                      className="absolute right-0 top-full mt-2 w-52 bg-gray-900/95 border border-white/10 rounded-lg shadow-2xl overflow-hidden backdrop-blur-md"
+                      className="absolute right-0 top-full bg-gray-900/95 border border-white/10 shadow-2xl overflow-hidden backdrop-blur-md"
+                      style={{ marginTop: '8px', width: '210px', borderRadius: '8px' }}
                     >
-                      <div className="p-3 border-b border-white/10">
+                      <div className="border-b border-white/10" style={{ padding: '12px' }}>
                         <p className="text-white text-sm font-semibold">{user?.name}</p>
                         <p className="text-gray-400 text-xs">{user?.email}</p>
                       </div>
-                      <div className="py-1">
+                      <div style={{ padding: '4px 0' }}>
                         <button
                           onClick={() => { setDropOpen(false); router.push('/profile/select'); }}
-                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                          className="flex items-center w-full text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                          style={{ gap: '12px', padding: '10px 16px' }}
                         >
                           <User size={16} /> Switch Profile
                         </button>
                         <button
                           onClick={() => { setDropOpen(false); router.push('/my-list'); }}
-                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                          className="flex items-center w-full text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                          style={{ gap: '12px', padding: '10px 16px' }}
                         >
                           <BookMarked size={16} /> My List
                         </button>
                         <button
                           onClick={() => { setDropOpen(false); handleLogout(); }}
-                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-400 hover:bg-red-900/20 transition-colors"
+                          className="flex items-center w-full text-sm text-red-400 hover:bg-red-900/20 transition-colors"
+                          style={{ gap: '12px', padding: '10px 16px' }}
                         >
                           <LogOut size={16} /> Sign Out
                         </button>
@@ -208,18 +224,20 @@ export default function Navbar() {
 
               {/* Mobile hamburger */}
               <button
-                className="md:hidden text-gray-300 hover:text-white p-1"
+                className="md:hidden text-gray-300 hover:text-white"
+                style={{ padding: '4px' }}
                 onClick={() => setMobileOpen(v => !v)}
               >
                 {mobileOpen ? <X size={22} /> : <Menu size={22} />}
               </button>
             </>
           ) : (
-            <div className="flex items-center gap-2 md:gap-3">
+            <div className="flex items-center" style={{ gap: '12px' }}>
               {!searchOpen && (
                 <button
                   onClick={() => setSearchOpen(true)}
-                  className="text-gray-300 hover:text-white transition-colors p-1.5"
+                  className="text-gray-300 hover:text-white transition-colors"
+                  style={{ padding: '6px' }}
                   aria-label="Search"
                 >
                   <Search size={20} />
@@ -227,7 +245,8 @@ export default function Navbar() {
               )}
               <Link
                 href="/login"
-                className="text-sm font-semibold text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition-colors whitespace-nowrap"
+                className="text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors whitespace-nowrap"
+                style={{ padding: '8px 20px', borderRadius: '4px' }}
               >
                 Sign In
               </Link>
@@ -250,20 +269,22 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="block px-6 py-3 text-gray-300 hover:text-white hover:bg-white/5 transition-colors text-sm"
+                className="block text-gray-300 hover:text-white hover:bg-white/5 transition-colors text-sm"
+                style={{ padding: '12px 24px' }}
               >
                 {link.label}
               </Link>
             ))}
             <button
               onClick={() => { setMobileOpen(false); setSearchOpen(true); }}
-              className="block w-full text-left px-6 py-3 text-gray-300 hover:text-white hover:bg-white/5 transition-colors text-sm"
+              className="block w-full text-left text-gray-300 hover:text-white hover:bg-white/5 transition-colors text-sm"
+              style={{ padding: '12px 24px' }}
             >
               Search
             </button>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+    </nav>
   );
 }

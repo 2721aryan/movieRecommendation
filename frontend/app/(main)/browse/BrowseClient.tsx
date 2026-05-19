@@ -27,7 +27,7 @@ export default function BrowseClient({ rows, featured }: BrowseClientProps) {
 
       {/* Guest nudge */}
       {!isAuthenticated && (
-        <div className="mx-4 md:mx-12 mt-6 mb-2 px-4 py-3 bg-gray-900/50 border border-white/[0.08] rounded-lg flex items-center gap-3">
+        <div style={{ margin: '0 60px', marginTop: '24px', marginBottom: '8px', padding: '12px 16px' }} className="bg-gray-900/50 border border-white/[0.08] rounded-lg flex items-center gap-3">
           <span className="text-red-500 text-lg">🎬</span>
           <p className="text-gray-400 text-sm">
             <span className="font-semibold text-white">Sign in</span>{' '}
@@ -44,7 +44,7 @@ export default function BrowseClient({ rows, featured }: BrowseClientProps) {
       )}
 
       {/* Content rows */}
-      <div className="mt-4 pb-12">
+      <div style={{ marginTop: '32px', paddingBottom: '60px' }}>
         {rows.map(row => (
           <MovieRow key={row.title} title={row.title} movies={row.movies} />
         ))}

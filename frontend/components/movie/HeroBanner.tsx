@@ -47,7 +47,7 @@ export default function HeroBanner({ movies, movie }: HeroBannerProps) {
 
   return (
     <>
-      <div className="relative w-full h-[85vh] min-h-[500px] overflow-hidden">
+      <div className="relative w-full overflow-hidden" style={{ height: '90vh', minHeight: '550px' }}>
         {/* Backdrop with crossfade */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -63,7 +63,12 @@ export default function HeroBanner({ movies, movie }: HeroBannerProps) {
               alt={current.title}
               fill priority
               className="object-cover object-top"
-              onError={e => { (e.target as HTMLImageElement).src = '/images/backdrop-fallback.png'; }}
+              onError={e => {
+                const target = e.target as HTMLImageElement;
+                if (!target.src.includes('backdrop-fallback.png')) {
+                  target.src = '/images/backdrop-fallback.png';
+                }
+              }}
             />
           </motion.div>
         </AnimatePresence>
@@ -80,12 +85,13 @@ export default function HeroBanner({ movies, movie }: HeroBannerProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={  { opacity: 0, x: 30 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="absolute bottom-[18%] left-0 px-6 md:px-14 max-w-2xl"
+            className="absolute max-w-2xl"
+            style={{ bottom: '22%', left: 0, paddingLeft: '60px', paddingRight: '24px' }}
           >
-            <h1 className="text-4xl md:text-6xl font-black text-white mb-3 leading-tight">
+            <h1 className="text-4xl md:text-6xl font-black text-white leading-tight" style={{ marginBottom: '16px' }}>
               {current.title}
             </h1>
-            <div className="flex items-center gap-3 mb-3 text-sm text-gray-300">
+            <div className="flex items-center text-sm text-gray-300" style={{ gap: '12px', marginBottom: '14px' }}>
               <span className="text-green-400 font-bold">{Math.round(current.vote_average * 10)}% Match</span>
               <span>{new Date(current.release_date).getFullYear()}</span>
               {current.maturity_rating && (
@@ -94,10 +100,10 @@ export default function HeroBanner({ movies, movie }: HeroBannerProps) {
                 </span>
               )}
             </div>
-            <p className="text-gray-200 text-sm md:text-base leading-relaxed mb-5 line-clamp-3">
+            <p className="text-gray-200 text-sm md:text-base leading-relaxed line-clamp-3" style={{ marginBottom: '24px' }}>
               {current.overview}
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center" style={{ gap: '12px' }}>
               <Button size="lg" onClick={() => router.push(`/movie/${current.id}`)} className="gap-2">
                 <Play size={18} fill="white" /> Play
               </Button>
@@ -120,7 +126,8 @@ export default function HeroBanner({ movies, movie }: HeroBannerProps) {
         {/* Mute toggle */}
         <button
           onClick={() => setMuted(m => !m)}
-          className="absolute bottom-[18%] right-6 md:right-14 w-10 h-10 flex items-center justify-center border-2 border-gray-400 rounded-full text-white hover:border-white transition-colors"
+          className="absolute flex items-center justify-center border-2 border-gray-400 rounded-full text-white hover:border-white transition-colors"
+          style={{ bottom: '22%', right: '60px', width: '40px', height: '40px' }}
           aria-label="Toggle mute"
         >
           {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
@@ -128,7 +135,7 @@ export default function HeroBanner({ movies, movie }: HeroBannerProps) {
 
         {/* Dot indicators */}
         {featured.length > 1 && (
-          <div className="absolute bottom-[10%] left-6 md:left-14 flex gap-2">
+          <div className="absolute flex" style={{ bottom: '12%', left: '60px', gap: '8px' }}>
             {featured.map((_, i) => (
               <button
                 key={i}

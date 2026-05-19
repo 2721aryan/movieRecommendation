@@ -27,6 +27,7 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -35,13 +36,16 @@ body {
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: #111;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #333;
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
@@ -53,6 +57,7 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -65,8 +70,85 @@ img {
   transition: opacity 0.2s ease;
 }
 
-/* Focus visible outlines */
+/* Enhanced focus visible outlines with red glow */
 :focus-visible {
   outline: 2px solid #E50914;
   outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.2);
+}
+
+/* Remove default outline on inputs (handled by ring in Tailwind) */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
+/* Input focus — clean white border, no glow (Netflix style) */
+input:focus,
+textarea:focus,
+select:focus {
+  box-shadow: none;
+}
+
+/* Override browser autofill background to match #333 input bg */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #333333 inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border-color: #6b7280 !important;
+  caret-color: #ffffff;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Button hover glow */
+button:hover:not(:disabled) {
+  transition: all 0.2s ease;
+}
+
+button.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 0 20px rgba(229, 9, 20, 0.4);
+}
+
+/* Loading skeleton animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+/* Glass morphism utility */
+.glass {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Gradient text utility */
+.text-gradient {
+  background: linear-gradient(135deg, #E50914, #ff6b6b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Text truncate with ellipsis */
+.truncate-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

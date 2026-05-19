@@ -19,9 +19,9 @@ const variants = {
 };
 
 const sizes = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-5 py-2.5 text-sm',
-  lg: 'px-8 py-3.5 text-base',
+  sm: 'px-3 py-2 text-sm',
+  md: 'px-5 py-3 text-base',
+  lg: 'px-8 py-4 text-base font-bold',
 };
 
 export default function Button({
@@ -32,7 +32,7 @@ export default function Button({
       whileHover={{ scale: disabled || loading ? 1 : 1.03 }}
       whileTap={  { scale: disabled || loading ? 1 : 0.97 }}
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded font-semibold transition-colors duration-150 cursor-pointer select-none',
+        'inline-flex items-center justify-center gap-2 rounded-md font-semibold transition-colors duration-200 cursor-pointer select-none',
         variants[variant],
         sizes[size],
         (disabled || loading) && 'opacity-50 cursor-not-allowed',

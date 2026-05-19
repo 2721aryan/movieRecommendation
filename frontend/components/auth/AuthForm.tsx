@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Film } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { APP_NAME } from '@/lib/constants';
 
@@ -15,13 +14,13 @@ interface AuthFormProps {
 }
 
 export default function AuthForm({ mode }: AuthFormProps) {
-  const router    = useRouter();
+  const router = useRouter();
   const { login, signup, isLoading } = useAuth();
-  const [name,    setName]    = useState('');
-  const [email,   setEmail]   = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
-  const [error,   setError]   = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,103 +32,261 @@ export default function AuthForm({ mode }: AuthFormProps) {
         await signup(name, email, password);
       }
       router.push('/profile/select');
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.');
     }
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="bg-black/80 backdrop-blur-md rounded-2xl border border-white/10 p-8 w-full max-w-md shadow-2xl"
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      /* Netflix card: rounded corners, black bg at 75% opacity */
+      style={{
+        background: 'rgba(0, 0, 0, 0.75)',
+        borderRadius: '4px',
+        padding: '60px 68px 40px',
+        width: '100%',
+        maxWidth: '450px',
+      }}
     >
-      {/* Logo */}
-      <div className="flex items-center gap-2 mb-8">
-        <Film className="text-red-600" size={24} />
-        <span className="text-red-600 font-black text-xl">{APP_NAME}</span>
-      </div>
+      {/* ── App Name (top-left, Netflix red) ── */}
+      <Link href="/" className="block" style={{ marginBottom: '28px' }}>
+        <span
+          style={{
+            fontSize: '32px',
+            fontWeight: 700,
+            color: '#e50914',
+            letterSpacing: '-0.5px',
+            lineHeight: 1,
+          }}
+        >
+          {APP_NAME}
+        </span>
+      </Link>
 
-      <h1 className="text-2xl font-bold text-white mb-1">
-        {mode === 'login' ? 'Welcome back' : 'Create your account'}
+      {/* ── Page heading ── */}
+      <h1
+        style={{
+          fontSize: '32px',
+          fontWeight: 700,
+          color: '#fff',
+          marginBottom: '28px',
+          lineHeight: 1.1,
+        }}
+      >
+        {mode === 'login' ? 'Sign In' : 'Sign Up'}
       </h1>
-      <p className="text-gray-400 text-sm mb-6">
-        {mode === 'login' ? "Sign in to continue watching" : "Start your free trial today"}
-      </p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      {/* ── Form ── */}
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
+      >
+        {/* Name field (signup only) */}
         {mode === 'signup' && (
-          <Input
-            label="Full Name"
-            type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="Your name"
-            required
-          />
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            transition={{ duration: 0.25 }}
+          >
+            <Input
+              label="Full Name"
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+              autoComplete="name"
+            />
+          </motion.div>
         )}
+
+        {/* Email */}
         <Input
-          label="Email"
+          label="Email or mobile number"
           type="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          placeholder="you@example.com"
           required
+          autoComplete="email"
         />
+
+        {/* Password */}
         <div className="relative">
           <Input
             label="Password"
             type={showPass ? 'text' : 'password'}
             value={password}
             onChange={e => setPassword(e.target.value)}
-            placeholder="••••••••"
             required
+            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
           />
+          {/* Show/hide toggle */}
           <button
             type="button"
             onClick={() => setShowPass(v => !v)}
-            className="absolute right-3 top-[34px] text-gray-400 hover:text-white transition-colors"
             aria-label="Toggle password visibility"
+            style={{
+              position: 'absolute',
+              right: '16px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#8c8c8c',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              display: 'flex',
+              alignItems: 'center',
+            }}
           >
-            {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
 
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {/* Error message */}
+        {error && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{
+              color: '#e87c03',
+              fontSize: '13px',
+              background: 'rgba(232, 124, 3, 0.08)',
+              border: '1px solid rgba(232, 124, 3, 0.3)',
+              borderRadius: '4px',
+              padding: '10px 14px',
+              margin: '0',
+            }}
+          >
+            {error}
+          </motion.p>
+        )}
 
-        <Button type="submit" size="lg" loading={isLoading} className="w-full mt-2">
-          {mode === 'login' ? 'Sign In' : 'Create Account'}
-        </Button>
+        {/* ── Submit button (Netflix red, full-width) ── */}
+        <motion.button
+          type="submit"
+          disabled={isLoading}
+          whileHover={{ filter: 'brightness(1.08)' }}
+          whileTap={{ scale: 0.98 }}
+          style={{
+            marginTop: '8px',
+            width: '100%',
+            height: '56px',
+            background: '#e50914',
+            color: '#fff',
+            fontWeight: 700,
+            fontSize: '16px',
+            borderRadius: '4px',
+            border: 'none',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            opacity: isLoading ? 0.7 : 1,
+            letterSpacing: '0.02em',
+            transition: 'opacity 0.15s',
+          }}
+        >
+          {isLoading
+            ? 'Please wait…'
+            : mode === 'login'
+            ? 'Sign In'
+            : 'Sign Up'}
+        </motion.button>
       </form>
 
-      <div className="mt-6 text-center">
-        {mode === 'login' ? (
-          <p className="text-gray-400 text-sm">
-            New to {APP_NAME}?{' '}
-            <Link href="/signup" className="text-white hover:text-red-400 font-semibold transition-colors">
-              Create an account
-            </Link>
-          </p>
-        ) : (
-          <p className="text-gray-400 text-sm">
-            Already have an account?{' '}
-            <Link href="/login" className="text-white hover:text-red-400 font-semibold transition-colors">
-              Sign in
-            </Link>
-          </p>
-        )}
-      </div>
+      {/* ── "OR" divider (login) ── */}
+      {mode === 'login' && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginTop: '16px',
+          }}
+        >
+          <div style={{ flex: 1, height: '1px', background: '#404040' }} />
+          <span style={{ color: '#737373', fontSize: '13px', fontWeight: 500 }}>OR</span>
+          <div style={{ flex: 1, height: '1px', background: '#404040' }} />
+        </div>
+      )}
 
-      {/* Continue as guest */}
-      <div className="mt-4 text-center">
+      {/* ── Use a code button (login) ── */}
+      {mode === 'login' && (
         <button
           onClick={() => router.push('/browse')}
-          className="text-gray-500 hover:text-gray-300 text-xs transition-colors underline underline-offset-2"
+          style={{
+            marginTop: '12px',
+            width: '100%',
+            height: '48px',
+            background: 'rgba(109, 109, 110, 0.7)',
+            color: '#fff',
+            fontWeight: 600,
+            fontSize: '15px',
+            borderRadius: '4px',
+            border: 'none',
+            cursor: 'pointer',
+            letterSpacing: '0.01em',
+          }}
         >
-          Continue browsing as guest
+          Browse as Guest
         </button>
-      </div>
+      )}
+
+      {/* ── Forgot password (login) ── */}
+      {mode === 'login' && (
+        <p style={{ color: '#b3b3b3', fontSize: '13px', marginTop: '12px', textAlign: 'right' }}>
+          <Link
+            href="/forgot-password"
+            style={{ color: '#fff', textDecoration: 'none' }}
+            onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+            onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+          >
+            Forgot password?
+          </Link>
+        </p>
+      )}
+
+      {/* ── Auth switch link ── */}
+      <p style={{ color: '#737373', fontSize: '15px', marginTop: '60px' }}>
+        {mode === 'login' ? (
+          <>
+            New to {APP_NAME}?{' '}
+            <Link
+              href="/signup"
+              style={{ color: '#fff', textDecoration: 'none', fontWeight: 500 }}
+              onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+              onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+            >
+              Sign up now.
+            </Link>
+          </>
+        ) : (
+          <>
+            Already have an account?{' '}
+            <Link
+              href="/login"
+              style={{ color: '#fff', textDecoration: 'none', fontWeight: 500 }}
+              onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+              onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+            >
+              Sign in.
+            </Link>
+          </>
+        )}
+      </p>
+
+      {/* ── CAPTCHA disclaimer (Netflix has this) ── */}
+      <p
+        style={{
+          color: '#737373',
+          fontSize: '13px',
+          marginTop: '16px',
+          lineHeight: 1.5,
+        }}
+      >
+        This page is protected by Google reCAPTCHA to ensure you&apos;re not a bot.{' '}
+        <span style={{ color: '#0071eb', cursor: 'pointer' }}>Learn more.</span>
+      </p>
     </motion.div>
   );
 }
