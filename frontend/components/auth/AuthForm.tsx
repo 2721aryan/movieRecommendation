@@ -32,8 +32,18 @@ export default function AuthForm({ mode }: AuthFormProps) {
         await signup(name, email, password);
       }
       router.push('/profile/select');
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (err: unknown) {
+      // Parse the real error message from the backend (e.g. "Invalid email or password")
+      let message = 'Something went wrong. Please try again.';
+      if (err instanceof Error) {
+        try {
+          const parsed = JSON.parse(err.message);
+          message = parsed?.detail ?? err.message;
+        } catch {
+          message = err.message;
+        }
+      }
+      setError(message);
     }
   };
 

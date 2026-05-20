@@ -4,7 +4,6 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 import { User, Profile, AuthState } from '@/types/auth';
 import { Movie } from '@/types/movie';
 import { api } from '@/lib/api';
-import { mockLogin, mockSignup, mockLogout } from '@/lib/auth';
 import { userService } from '@/services/user.service';
 import { movieService } from '@/services/movie.service';
 
@@ -100,35 +99,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Try real backend first, fall back to mock
-      try {
-        const { access_token } = await api.post<{ access_token: string }>('/api/auth/login', { email, password });
-        localStorage.setItem('nflix_token', access_token);
-      } catch {}
-      const u = await mockLogin({ email, password });
+      // 1. Authenticate — backend returns JWT or throws 401
+      const { access_token } = await api.post<{ access_token: string }>('/api/auth/login', { email, password });
+      localStorage.setItem('nflix_token', access_token);
+
+      // 2. Fetch the real user object using the token
+      const u = await api.get<User>('/api/auth/me', access_token);
       setUser(u);
-    } finally { setIsLoading(false); }
+    } finally {
+      setIsLoading(false);
+    }
+    // Errors (wrong password, user not found) propagate up to the login form
   }, []);
 
   const signup = useCallback(async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      try {
-        await api.post('/api/auth/signup', { name, email, password });
-      } catch {}
-      const u = await mockSignup({ name, email, password });
+      // 1. Register — backend throws 400 if email is already taken
+      await api.post('/api/auth/signup', { name, email, password });
+
+      // 2. Auto-login after successful registration
+      const { access_token } = await api.post<{ access_token: string }>('/api/auth/login', { email, password });
+      localStorage.setItem('nflix_token', access_token);
+
+      // 3. Fetch the real user object
+      const u = await api.get<User>('/api/auth/me', access_token);
       setUser(u);
-    } finally { setIsLoading(false); }
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   const logout = useCallback(async () => {
     setIsLoading(true);
     try {
-      await mockLogout();
+      await api.post('/api/auth/logout', {}).catch(() => {});
       localStorage.removeItem('nflix_token');
       setUser(null);
-      // Don't clear myList/likedMovies/dislikedMovies here —
-      // they are re-loaded from localStorage when user logs back in
       setMyList([]);
       setLiked([]);
       setDisliked([]);
