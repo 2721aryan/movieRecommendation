@@ -13,7 +13,11 @@ export function useSearch() {
 
   // Debounced search
   useEffect(() => {
-    if (!query && genreId === null) { setResults([]); return; }
+    if (!query && genreId === null) {
+      // eslint-disable-next-line
+      setResults([]); 
+      return; 
+    }
 
     const timer = setTimeout(async () => {
       setLoading(true);

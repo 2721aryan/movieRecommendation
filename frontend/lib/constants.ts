@@ -55,4 +55,5 @@ export const REC_ENDPOINTS = {
   similar:   (id: number) => `/api/recommendations/similar/${id}`,
   trending:  '/api/recommendations/trending',
   topRated:  '/api/recommendations/top-rated',
+  rows:      '/api/recommendations/rows',
 };

@@ -3,20 +3,35 @@ import { WatchlistItem, UserStats } from '@/types/user';
 import { api } from '@/lib/api';
 
 export const userService = {
-  getWatchlist: async (userId: string): Promise<WatchlistItem[]> => {
-    return [];
-    // Backend: return api.get<WatchlistItem[]>(`/api/users/${userId}/watchlist`);
+  getWatchlist: async (profileId: string): Promise<WatchlistItem[]> => {
+    try {
+      return await api.get<WatchlistItem[]>(`/api/users/${profileId}/watchlist`);
+    } catch {
+      return [];
+    }
   },
-  addToWatchlist: async (userId: string, movieId: number): Promise<void> => {
-    console.log('[Watchlist] Add', { userId, movieId });
-    // Backend: await api.post(`/api/users/${userId}/watchlist`, { movie_id: movieId });
+
+  addToWatchlist: async (profileId: string, movieId: number): Promise<void> => {
+    try {
+      await api.post(`/api/users/${profileId}/watchlist`, { movie_id: movieId });
+    } catch {
+      console.log('[Watchlist] Add - offline', { profileId, movieId });
+    }
   },
-  removeFromWatchlist: async (userId: string, movieId: number): Promise<void> => {
-    console.log('[Watchlist] Remove', { userId, movieId });
-    // Backend: await api.delete(`/api/users/${userId}/watchlist/${movieId}`);
+
+  removeFromWatchlist: async (profileId: string, movieId: number): Promise<void> => {
+    try {
+      await api.delete(`/api/users/${profileId}/watchlist/${movieId}`);
+    } catch {
+      console.log('[Watchlist] Remove - offline', { profileId, movieId });
+    }
   },
-  getStats: async (userId: string): Promise<UserStats> => {
-    return { total_watched: 0, total_liked: 0, watchlist_count: 0 };
-    // Backend: return api.get<UserStats>(`/api/users/${userId}/stats`);
+
+  getStats: async (profileId: string): Promise<UserStats> => {
+    try {
+      return await api.get<UserStats>(`/api/users/${profileId}/stats`);
+    } catch {
+      return { total_watched: 0, total_liked: 0, watchlist_count: 0 };
+    }
   },
 };

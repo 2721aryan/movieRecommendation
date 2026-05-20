@@ -31,6 +31,7 @@ export default function Navbar() {
     if (searchOpen) {
       setTimeout(() => searchInputRef.current?.focus(), 50);
     } else {
+      // eslint-disable-next-line
       setSearchQuery('');
     }
   }, [searchOpen]);
