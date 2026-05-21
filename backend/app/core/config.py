@@ -20,7 +20,11 @@ class Settings(BaseSettings):
     TMDB_BASE_URL: str = "https://api.themoviedb.org/3"
 
     # CORS — allow Next.js dev server
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
+    ALLOWED_ORIGINS: List[str] = [
+    "http://localhost:3000",
+    "https://movie-recommendation-blue.vercel.app",
+    "https://movie-recommendation-mzbpisz0g-aryan-kumars-projects-c43191b5.vercel.app",
+]
 
     class Config:
         env_file = ".env"
