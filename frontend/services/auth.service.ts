@@ -1,25 +1,24 @@
 // services/auth.service.ts
 // ─────────────────────────────────────────────────────────────────────────────
-// Wired to the FastAPI backend. Falls back to mock if backend is unreachable.
+// Wired to the FastAPI backend. Login/signup/me call the real API; logout still calls mock cleanup.
 // ─────────────────────────────────────────────────────────────────────────────
 import { LoginCredentials, SignupCredentials, User } from '@/types/auth';
-import { mockLogin, mockSignup, mockLogout } from '@/lib/auth';
+import { mockSignup, mockLogout } from '@/lib/auth';
 import { api } from '@/lib/api';
 
 export const authService = {
   login: async (creds: LoginCredentials): Promise<User> => {
     try {
-      // Backend returns a JWT token; fetch the user object separately
       const { access_token } = await api.post<{ access_token: string }>('/api/auth/login', creds);
-      // Store token for subsequent requests
       if (typeof window !== 'undefined') {
         localStorage.setItem('nflix_token', access_token);
       }
-      // Decode user info from token payload (or add a /api/auth/me endpoint later)
-      return mockLogin(creds); // TODO: replace with api.get<User>('/api/auth/me') once /me is added
-    } catch {
-      // Fallback to mock during development if backend is offline
-      return mockLogin(creds);
+      // Fetch real user from backend
+      const user = await api.get<User>('/api/auth/me', access_token);
+      return user;
+    } catch (error) {
+      // Remove fallback — throw error so UI shows proper message
+      throw error;
     }
   },
 
