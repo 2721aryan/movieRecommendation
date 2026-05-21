@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional, List
 
 
@@ -28,6 +28,16 @@ class ProfileOut(BaseModel):
     avatar: str
     favorite_genres: List[int] = []
     language: str = "en"
+
+    @field_validator("favorite_genres", mode="before")
+    @classmethod
+    def parse_favorite_genres(cls, v):
+        """DB stores genres as a comma-separated string like '28,12,878'."""
+        if isinstance(v, list):
+            return v
+        if not v or not isinstance(v, str) or v.strip() == "":
+            return []
+        return [int(x) for x in v.split(",") if x.strip().isdigit()]
 
     class Config:
         from_attributes = True
