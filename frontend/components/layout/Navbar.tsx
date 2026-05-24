@@ -65,14 +65,17 @@ export default function Navbar() {
     router.push('/');
   };
 
+  // Routes that always need a solid navbar (no hero backdrop behind them)
+  const alwaysSolid = pathname === '/my-list' || pathname?.startsWith('/my-list');
+
   return (
     <nav
       className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
       style={{
-        background: scrolled
+        background: scrolled || alwaysSolid
           ? 'rgba(0, 0, 0, 0.95)'
           : 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)',
-        backdropFilter: scrolled ? 'blur(12px)' : 'none',
+        backdropFilter: scrolled || alwaysSolid ? 'blur(12px)' : 'none',
       }}
     >
       <div

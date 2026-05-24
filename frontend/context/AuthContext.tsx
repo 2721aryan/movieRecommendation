@@ -67,19 +67,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const movies = await Promise.all(
           items.map(item => movieService.getById(item.movie_id))
         );
-        setMyList(movies.filter(Boolean) as Movie[]);
+        // Deduplicate by id in case backend has duplicate entries
+        const seen = new Set<number>();
+        const unique = (movies.filter(Boolean) as Movie[]).filter(m => {
+          if (seen.has(m.id)) return false;
+          seen.add(m.id);
+          return true;
+        });
+        setMyList(unique);
       } else if (saved.myListIds?.length > 0) {
         // fallback: localStorage IDs → full movies
         const movies = await Promise.all(
           saved.myListIds.map((id: number) => movieService.getById(id))
         );
-        setMyList(movies.filter(Boolean) as Movie[]);
+        const seen = new Set<number>();
+        const unique = (movies.filter(Boolean) as Movie[]).filter(m => {
+          if (seen.has(m.id)) return false;
+          seen.add(m.id);
+          return true;
+        });
+        setMyList(unique);
       }
     }).catch(() => {
       // Backend offline — use localStorage
       if (saved.myListIds?.length > 0) {
         Promise.all(saved.myListIds.map((id: number) => movieService.getById(id)))
-          .then(movies => setMyList(movies.filter(Boolean) as Movie[]));
+          .then(movies => {
+            const seen = new Set<number>();
+            const unique = (movies.filter(Boolean) as Movie[]).filter(m => {
+              if (seen.has(m.id)) return false;
+              seen.add(m.id);
+              return true;
+            });
+            setMyList(unique);
+          });
       }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps

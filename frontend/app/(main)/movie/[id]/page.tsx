@@ -1,49 +1,53 @@
-// Server component — runs on the Next.js server which CAN reach api.themoviedb.org
-import { fetchMovieById, fetchSimilar, fetchTrending } from '@/lib/tmdb';
-import { MOCK_MOVIES } from '@/lib/mock-data';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { fetchMovieById, fetchSimilar } from '@/lib/tmdb';
+import { movieService } from '@/services/movie.service';
 import MovieDetailClient from './MovieDetailClient';
-import type { Metadata } from 'next';
+import type { Movie } from '@/types/movie';
+import AppShell from '@/components/layout/AppShell';
 
-// Next.js 15: params is a Promise — must be awaited before accessing properties.
-interface Props {
-  params: Promise<{ id: string }>;
-}
+export default function MovieDetailPage() {
+  const params = useParams();
+  const id = Number(params.id);
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id: idStr } = await params;
-  const id = Number(idStr);
-  const mockMovie = MOCK_MOVIES.find(m => m.id === id) ?? null;
-  if (mockMovie) return { title: `${mockMovie.title} — NFLIX` };
-  const movie = await fetchMovieById(id).catch(() => null);
-  return { title: movie ? `${movie.title} — NFLIX` : 'Movie — NFLIX' };
-}
+  const [movie, setMovie] = useState<Movie | null | undefined>(undefined); // undefined = loading
+  const [similar, setSimilar] = useState<Movie[]>([]);
 
-export default async function MovieDetailPage({ params }: Props) {
-  const { id: idStr } = await params;
-  const id = Number(idStr);
+  useEffect(() => {
+    const load = async () => {
+      // 1. Try local backend DB first (fast, always works)
+      const dbMovie = await movieService.getById(id);
+      if (dbMovie) {
+        setMovie(dbMovie);
+        const sim = await movieService.getSimilar(id).catch(() => [] as Movie[]);
+        setSimilar(sim);
+        return;
+      }
 
-  // ── Fast path: movie is in mock data ──────────────────────────────────────
-  // Serve instantly — no TMDB call needed, no loading delay.
-  const mockMovie = MOCK_MOVIES.find(m => m.id === id) ?? null;
-  if (mockMovie) {
-    const mockSimilar = MOCK_MOVIES.filter(m => m.id !== id).slice(0, 12);
-    // Silently upgrade similar movies from TMDB in background (not awaited)
-    // This doesn't block rendering — similar movies will update on next visit
-    // due to Next.js's 1-hour cache on the fetchSimilar call.
-    return <MovieDetailClient movie={mockMovie} similar={mockSimilar} />;
+      // 2. DB doesn't have it (e.g. live TMDB trending movie) — try TMDB from browser
+      const [tmdbMovie, tmdbSimilar] = await Promise.all([
+        fetchMovieById(id).catch(() => null),
+        fetchSimilar(id).catch(() => [] as Movie[]),
+      ]);
+      setMovie(tmdbMovie);
+      setSimilar(tmdbSimilar);
+    };
+
+    load();
+  }, [id]);
+
+  // Loading state
+  if (movie === undefined) {
+    return (
+      <AppShell>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </AppShell>
+    );
   }
 
-  // ── Slow path: movie is not in mock data — fetch from TMDB ────────────────
-  // Both fetches have a 5-second timeout (set in lib/tmdb.ts).
-  // fetchTrending is only used as a fallback if fetchMovieById fails.
-  const [movie, similar] = await Promise.all([
-    fetchMovieById(id).catch(() => null),
-    fetchSimilar(id).catch(() => []),
-  ]);
-
-  // If detail endpoint failed, try to find the movie in the trending list
-  const resolvedMovie = movie ?? await fetchTrending().then(t => t.find(m => m.id === id) ?? null).catch(() => null);
-  const resolvedSimilar = similar?.length ? similar : MOCK_MOVIES.slice(0, 12);
-
-  return <MovieDetailClient movie={resolvedMovie ?? null} similar={resolvedSimilar} />;
+  return <MovieDetailClient movie={movie} similar={similar} />;
 }

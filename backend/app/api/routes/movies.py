@@ -48,6 +48,23 @@ def get_movies(
     return [_serialize_movie(m) for m in movies]
 
 
+@router.get("/search", response_model=List[MovieOut])
+def search_movies(
+    q: str = Query(..., min_length=1, description="Search query"),
+    limit: int = 20,
+    db: Session = Depends(get_db),
+):
+    """GET /api/movies/search?q=... — full-text title search against local DB."""
+    movies = (
+        db.query(Movie)
+        .filter(Movie.title.ilike(f"%{q}%"))
+        .order_by(Movie.vote_count.desc())
+        .limit(limit)
+        .all()
+    )
+    return [_serialize_movie(m) for m in movies]
+
+
 @router.get("/{movie_id}", response_model=MovieOut)
 def get_movie(movie_id: int, db: Session = Depends(get_db)):
     """GET /api/movies/{id} — single movie by TMDB ID."""

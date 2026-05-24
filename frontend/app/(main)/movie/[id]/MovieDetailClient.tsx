@@ -76,7 +76,7 @@ export default function MovieDetailClient({ movie, similar }: Props) {
       </div>
 
       {/* Content */}
-      <div className="px-4 md:px-12 -mt-36 relative z-10 pb-14">
+      <div style={{ padding: '0 60px' }} className="-mt-36 relative z-10 pb-14">
         <div className="flex flex-col md:flex-row gap-8">
 
           {/* Poster */}

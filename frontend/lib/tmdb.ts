@@ -83,8 +83,23 @@ export async function fetchPopular(page = 1): Promise<Movie[]> {
 }
 
 export async function fetchTrending(): Promise<Movie[]> {
-  const data = await tmdbFetch<TMDBListResponse>('/trending/movie/week');
-  return data.results.slice(0, 10).map(mapMovie);
+  const data = await tmdbFetch<TMDBListResponse>('/trending/movie/day');
+  return data.results.slice(0, 20).map(mapMovie);
+}
+
+export async function fetchTrendingWeek(page = 1): Promise<Movie[]> {
+  const data = await tmdbFetch<TMDBListResponse>('/trending/movie/week', { page: String(page) });
+  return data.results.map(mapMovie);
+}
+
+export async function fetchByKeyword(keywordId: number, page = 1): Promise<Movie[]> {
+  const data = await tmdbFetch<TMDBListResponse>('/discover/movie', {
+    with_keywords:    String(keywordId),
+    sort_by:          'vote_average.desc',
+    'vote_count.gte': '1000',              // filter out low-vote noise
+    page:             String(page),
+  });
+  return data.results.map(mapMovie);
 }
 
 export async function fetchTopRated(page = 1): Promise<Movie[]> {

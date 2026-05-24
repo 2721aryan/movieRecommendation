@@ -6,16 +6,21 @@ import HeroBanner from '@/components/movie/HeroBanner';
 import MovieRow from '@/components/movie/MovieRow';
 import { useAuth } from '@/hooks/useAuth';
 import { movieService } from '@/services/movie.service';
+import { fetchTrending } from '@/lib/tmdb';
 import type { Movie, MovieRow as MovieRowType } from '@/types/movie';
+
+// Module-level cache — survives client-side navigation so going back is instant
+let _cachedRows: MovieRowType[] = [];
+let _cachedProfileId: string | undefined;
 
 interface BrowseClientProps {
   rows:     MovieRowType[];
-  featured: Movie;
+  featured: Movie | null;
 }
 
-export default function BrowseClient({ rows: initialRows, featured }: BrowseClientProps) {
+export default function BrowseClient({ rows: initialRows, featured: _ }: BrowseClientProps) {
   const { user, isAuthenticated, myList, dislikedMovies } = useAuth();
-  const [rows, setRows] = useState<MovieRowType[]>(initialRows);
+  const [rows, setRows] = useState<MovieRowType[]>(_cachedRows.length ? _cachedRows : initialRows);
   const isMounted = useRef(true);
 
   const activeProfileId = user?.active_profile?.id ?? user?.profiles?.[0]?.id;
@@ -25,24 +30,54 @@ export default function BrowseClient({ rows: initialRows, featured }: BrowseClie
     return () => { isMounted.current = false; };
   }, []);
 
-  // Fetch personalised rows on mount/profile change AND whenever dislikes change
+  // On mount: fetch TMDB trending + backend rows. Skip if same profile already cached.
   useEffect(() => {
-    if (activeProfileId) {
-      movieService.getRows(activeProfileId)
-        .then(fresh => { if (isMounted.current) setRows(fresh); })
-        .catch(console.error);
-    } else {
-      setRows(initialRows);
+    const isSameProfile = _cachedProfileId === (activeProfileId || '');
+    if (isSameProfile && _cachedRows.length > 0) {
+      setRows(_cachedRows);
+      return; // instant — no fetch needed
     }
-  }, [activeProfileId, initialRows, dislikedMovies]); // ← dislikedMovies triggers re-fetch
 
-  // Optimistically strip disliked movies from every row immediately (instant UI)
-  const visibleRows = rows.map(row => ({
-    ...row,
-    movies: row.movies.filter(m => !dislikedMovies.includes(m.id)),
-  })).filter(row => row.movies.length > 0); // hide empty rows
+    const load = async () => {
+      const [trendingMovies, backendRows] = await Promise.all([
+        fetchTrending().catch(() => [] as Movie[]),
+        movieService.getRows(activeProfileId || undefined).catch(() => [] as MovieRowType[]),
+      ]);
 
-  // Build My List row from fetched movies (intersection with watchlist IDs)
+      if (!isMounted.current) return;
+
+      const trendingRow: MovieRowType = {
+        title: 'Trending Now',
+        movies: trendingMovies,
+        endpoint: '/api/recommendations/trending',
+      };
+
+      const withTrending = (trendingMovies.length > 0)
+        ? backendRows.map(r => r.title === 'Trending Now' ? trendingRow : r)
+        : backendRows;
+
+      const hasTrending = withTrending.some(r => r.title === 'Trending Now');
+      const finalRows = hasTrending ? withTrending : trendingMovies.length > 0 ? [trendingRow, ...withTrending] : withTrending;
+
+      // Save to cache
+      _cachedRows = finalRows;
+      _cachedProfileId = activeProfileId || '';
+      setRows(finalRows);
+    };
+
+    load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProfileId, dislikedMovies]);
+
+  // Optimistically strip disliked movies from every row
+  const visibleRows = rows
+    .map(row => ({
+      ...row,
+      movies: row.movies.filter(m => !dislikedMovies.includes(m.id)),
+    }))
+    .filter(row => row.movies.length > 0);
+
+  // Build My List row
   const allMovies = visibleRows.flatMap(r => r.movies);
   const myListIds = myList.map(m => m.id);
   const myListMovies = allMovies.filter((m, idx, arr) =>

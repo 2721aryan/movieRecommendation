@@ -4,6 +4,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 
 from app.core.database import get_db
 from app.models.models import Movie, Interaction, WatchlistItem, Profile
@@ -48,8 +49,11 @@ def add_to_watchlist(user_id: str, body: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="movie_id required")
     existing = db.query(WatchlistItem).filter_by(profile_id=user_id, movie_id=movie_id).first()
     if not existing:
-        db.add(WatchlistItem(profile_id=user_id, movie_id=movie_id))
-        db.commit()
+        try:
+            db.add(WatchlistItem(profile_id=user_id, movie_id=movie_id))
+            db.commit()
+        except IntegrityError:
+            db.rollback()  # Race condition: already inserted by concurrent request
     return {"message": "Added to watchlist"}
 
 

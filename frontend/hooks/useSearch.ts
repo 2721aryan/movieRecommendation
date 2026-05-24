@@ -2,8 +2,20 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Movie } from '@/types/movie';
-import { searchMovies, fetchByGenre } from '@/lib/tmdb';
-import { SEARCH_DEBOUNCE_MS } from '@/lib/constants';
+import { fetchByGenre } from '@/lib/tmdb';
+import { SEARCH_DEBOUNCE_MS, API_BASE_URL } from '@/lib/constants';
+
+const API_BASE = API_BASE_URL ?? 'http://localhost:8000';
+
+async function searchMoviesLocal(q: string): Promise<Movie[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/movies/search?q=${encodeURIComponent(q)}&limit=40`);
+    if (!res.ok) return [];
+    return res.json() as Promise<Movie[]>;
+  } catch {
+    return [];
+  }
+}
 
 export function useSearch() {
   const [query,    setQuery]   = useState('');
@@ -11,20 +23,17 @@ export function useSearch() {
   const [results,  setResults] = useState<Movie[]>([]);
   const [loading,  setLoading] = useState(false);
 
-  // Debounced search
   useEffect(() => {
     if (!query && genreId === null) {
-      // eslint-disable-next-line
-      setResults([]); 
-      return; 
+      setResults([]);
+      return;
     }
 
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
         if (query.trim()) {
-          const res = await searchMovies(query);
-          // If genre filter also active, narrow the results
+          const res = await searchMoviesLocal(query);
           setResults(genreId ? res.filter(m => m.genre_ids.includes(genreId)) : res);
         } else if (genreId !== null) {
           const res = await fetchByGenre(genreId);

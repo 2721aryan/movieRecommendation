@@ -33,16 +33,17 @@ export default function MyListPage() {
     );
   }
 
-  const movies = myList;
+  // Deduplicate by id as a safety net against any race-condition duplicates
+  const seen = new Set<number>();
+  const movies = myList.filter(m => {
+    if (seen.has(m.id)) return false;
+    seen.add(m.id);
+    return true;
+  });
 
   return (
     <AppShell>
-      <div className="min-h-screen pt-24 px-4 md:px-12 pb-12">
-        <div className="flex items-center gap-3 mb-8">
-          <BookMarked className="text-red-500" size={28} />
-          <h1 className="text-3xl font-bold text-white">My List</h1>
-          <span className="text-gray-500 text-sm">({movies.length} movie{movies.length !== 1 ? 's' : ''})</span>
-        </div>
+      <div className="pb-12" style={{ paddingTop: '32px', paddingLeft: '60px', paddingRight: '60px' }}>
 
         {movies.length === 0 ? (
           <div className="text-center py-20">
